@@ -18,9 +18,12 @@ api.interceptors.response.use(
 
         // Handle 401 errors (token expired)
         if (error.response?.status === 401 && !originalRequest._retry) {
-            // Avoid looping if we are already checking me or refreshing
-            if (originalRequest.url.includes('/auth/me') || originalRequest.url.includes('/auth/refresh')) {
-                 return Promise.reject(error);
+            // Prevent infinite retry loop
+            if (originalRequest.url === '/auth/refresh') {
+                if (typeof window !== 'undefined') {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(error);
             }
 
             originalRequest._retry = true;
@@ -31,8 +34,7 @@ api.interceptors.response.use(
                 // Retry original request
                 return api(originalRequest);
             } catch (refreshError) {
-                // Only redirect if we are not already on login page
-                if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+                if (typeof window !== 'undefined') {
                     window.location.href = '/login';
                 }
                 return Promise.reject(refreshError);
