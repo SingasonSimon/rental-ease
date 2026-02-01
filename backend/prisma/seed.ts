@@ -1,11 +1,17 @@
 import { PrismaClient, Role, UnitStatus, LeaseStatus, PaymentStatus, PaymentFrequency } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as dotenv from 'dotenv';
+import { Pool } from 'pg';
+import { PrismaPg } from '@prisma/adapter-pg';
 
 // Load environment variables
 dotenv.config();
 
-const prisma = new PrismaClient();
+const connectionString = process.env.DATABASE_URL;
+const pool = new Pool({ connectionString });
+const adapter = new PrismaPg(pool);
+
+const prisma = new PrismaClient({ adapter });
 
 async function hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, 10);

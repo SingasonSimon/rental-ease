@@ -30,29 +30,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
 
-    useEffect(() => {
-        // Check for existing session on mount
-        const token = localStorage.getItem("accessToken");
-        const storedUser = localStorage.getItem("user");
-
-        if (token && storedUser) {
-            try {
-                setUser(JSON.parse(storedUser));
-            } catch {
-                localStorage.removeItem("accessToken");
-                localStorage.removeItem("user");
-            }
+    const checkAuth = async () => {
+        try {
+            const { data } = await authApi.me();
+            setUser(data.user);
+        } catch {
+            setUser(null);
+        } finally {
+            setIsLoading(false);
         }
-        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        checkAuth();
     }, []);
 
     const login = async (email: string, password: string) => {
         const response = await authApi.login(email, password);
-        const { tokens, user: userData } = response.data;
+        const { user: userData } = response.data;
 
-        localStorage.setItem("accessToken", tokens.accessToken);
-        localStorage.setItem("refreshToken", tokens.refreshToken);
-        localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
 
         // Redirect based on role
@@ -70,22 +66,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const register = async (data: { email: string; password: string; firstName: string; lastName: string; phone: string }) => {
         const response = await authApi.register(data);
-        const { tokens, user: userData } = response.data;
+        const { user: userData } = response.data;
 
-        localStorage.setItem("accessToken", tokens.accessToken);
-        localStorage.setItem("refreshToken", tokens.refreshToken);
-        localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
 
         // Redirect to dashboard
         router.push("/dashboard");
     };
 
-    const logout = () => {
-        localStorage.removeItem("accessToken");
-        localStorage.removeItem("user");
-        setUser(null);
-        router.push("/login");
+    const logout = async () => {
+        try {
+            await authApi.logout();
+        } catch (error) {
+            console.error("Logout failed", error);
+        } finally {
+            setUser(null);
+            router.push("/login");
+        }
     };
 
     return (
