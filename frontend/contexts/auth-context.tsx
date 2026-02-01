@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { api, authApi } from "@/lib/api";
 
@@ -29,8 +29,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const router = useRouter();
+    const authCheckRef = useRef<NodeJS.Timeout | null>(null);
 
     const checkAuth = async () => {
+        // Clear any pending auth check
+        if (authCheckRef.current) {
+            clearTimeout(authCheckRef.current);
+        }
+
         try {
             const { data } = await authApi.me();
             setUser(data.user);
@@ -42,7 +48,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        checkAuth();
+        // Debounce the initial auth check to prevent rapid calls
+        authCheckRef.current = setTimeout(() => {
+            checkAuth();
+        }, 100);
+
+        return () => {
+            if (authCheckRef.current) {
+                clearTimeout(authCheckRef.current);
+            }
+        };
     }, []);
 
     const login = async (email: string, password: string) => {

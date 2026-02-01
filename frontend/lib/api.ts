@@ -2,6 +2,19 @@ import axios from 'axios';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
+// Track ongoing refresh requests to prevent multiple simultaneous refreshes
+let isRefreshing = false;
+let refreshSubscribers: ((token: string) => void)[] = [];
+
+const subscribeToRefresh = (callback: (token: string) => void) => {
+    refreshSubscribers.push(callback);
+};
+
+const onRefreshed = (token: string) => {
+    refreshSubscribers.forEach(callback => callback(token));
+    refreshSubscribers = [];
+};
+
 export const api = axios.create({
     baseURL: API_BASE_URL,
     withCredentials: true,
@@ -18,24 +31,52 @@ api.interceptors.response.use(
 
         // Handle 401 errors (token expired)
         if (error.response?.status === 401 && !originalRequest._retry) {
+            // Don't attempt to refresh for login or register requests
+            if (originalRequest.url?.includes('/auth/login') || originalRequest.url?.includes('/auth/register')) {
+                return Promise.reject(error);
+            }
+
             // Prevent infinite retry loop
             if (originalRequest.url === '/auth/refresh') {
+                isRefreshing = false;
+                refreshSubscribers = [];
                 if (typeof window !== 'undefined') {
-                    window.location.href = '/login';
+                    // Only redirect if not already on login or register page
+                    if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+                        window.location.href = '/login';
+                    }
                 }
                 return Promise.reject(error);
             }
 
             originalRequest._retry = true;
 
+            if (isRefreshing) {
+                // If already refreshing, wait for the new token
+                return new Promise((resolve) => {
+                    subscribeToRefresh((token) => {
+                        resolve(api(originalRequest));
+                    });
+                });
+            }
+
+            isRefreshing = true;
+
             try {
                 // Try to refresh token
                 await api.post('/auth/refresh');
+                isRefreshing = false;
+                onRefreshed('new-token');
                 // Retry original request
                 return api(originalRequest);
             } catch (refreshError) {
+                isRefreshing = false;
+                refreshSubscribers = [];
                 if (typeof window !== 'undefined') {
-                    window.location.href = '/login';
+                    // Only redirect if not already on login or register page
+                    if (!window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+                        window.location.href = '/login';
+                    }
                 }
                 return Promise.reject(refreshError);
             }
