@@ -1,6 +1,6 @@
 import prisma from '../config/database';
 import { hashPassword, comparePassword } from '../utils/bcrypt';
-import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { Role } from '@prisma/client';
 
 export class AuthService {
@@ -136,6 +136,35 @@ export class AuthService {
             tokens: {
                 accessToken,
                 refreshToken,
+            },
+        };
+    }
+
+    static async refreshToken(token: string) {
+        const payload = verifyRefreshToken(token);
+        if (!payload) {
+            throw new Error('Invalid refresh token');
+        }
+
+        const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+        if (!user || !user.isActive) {
+            throw new Error('User not found or inactive');
+        }
+
+        const accessToken = generateAccessToken({ userId: user.id, role: user.role });
+        const newRefreshToken = generateRefreshToken({ userId: user.id, role: user.role });
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                firstName: user.firstName,
+                lastName: user.lastName,
+            },
+            tokens: {
+                accessToken,
+                refreshToken: newRefreshToken,
             },
         };
     }

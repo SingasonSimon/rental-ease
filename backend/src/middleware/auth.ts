@@ -9,14 +9,20 @@ export interface AuthRequest extends Request {
 }
 
 export const requireAuth = (req: AuthRequest, res: Response, next: NextFunction) => {
-    const authHeader = req.headers.authorization;
+    let token = req.cookies.accessToken;
 
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    if (!token) {
+        const authHeader = req.headers.authorization;
+        if (authHeader && authHeader.startsWith('Bearer ')) {
+            token = authHeader.split(' ')[1];
+        }
+    }
+
+    if (!token) {
         res.status(401).json({ error: 'Authorization token required' });
         return;
     }
 
-    const token = authHeader.split(' ')[1];
     const payload = verifyAccessToken(token);
 
     if (!payload) {
