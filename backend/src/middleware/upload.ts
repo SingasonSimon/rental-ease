@@ -4,7 +4,7 @@ import cloudinary from '../config/cloudinary';
 
 const storage = new CloudinaryStorage({
     cloudinary: cloudinary,
-    params: async (req, _file) => {
+    params: async (req) => {
         let folder = 'rental_management';
 
         // Dynamically assign folder based on the upload type

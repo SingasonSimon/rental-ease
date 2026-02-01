@@ -1,5 +1,6 @@
 import express, { Request, Response } from 'express';
 import cors from 'cors';
+import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import dotenv from 'dotenv';
@@ -24,7 +25,11 @@ dotenv.config();
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+    origin: [config.frontendUrl, 'http://localhost:3000'],
+    credentials: true
+}));
+app.use(cookieParser());
 app.use(helmet());
 app.use(morgan('dev'));
 app.use(express.json());

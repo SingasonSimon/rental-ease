@@ -4,34 +4,38 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/a
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json',
     },
 });
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-    (config) => {
-        if (typeof window !== 'undefined') {
-            const token = localStorage.getItem('accessToken');
-            if (token) {
-                config.headers.Authorization = `Bearer ${token}`;
-            }
-        }
-        return config;
-    },
-    (error) => Promise.reject(error)
-);
-
-// Response interceptor for error handling
+// Response interceptor for error handling and token refresh
 api.interceptors.response.use(
     (response) => response,
     async (error) => {
+        const originalRequest = error.config;
+
         // Handle 401 errors (token expired)
-        if (error.response?.status === 401) {
-            if (typeof window !== 'undefined') {
-                localStorage.removeItem('accessToken');
-                window.location.href = '/login';
+        if (error.response?.status === 401 && !originalRequest._retry) {
+            // Avoid looping if we are already checking me or refreshing
+            if (originalRequest.url.includes('/auth/me') || originalRequest.url.includes('/auth/refresh')) {
+                 return Promise.reject(error);
+            }
+
+            originalRequest._retry = true;
+
+            try {
+                // Try to refresh token
+                await api.post('/auth/refresh');
+                // Retry original request
+                return api(originalRequest);
+            } catch (refreshError) {
+                // Only redirect if we are not already on login page
+                if (typeof window !== 'undefined' && !window.location.pathname.includes('/login')) {
+                    window.location.href = '/login';
+                }
+                return Promise.reject(refreshError);
             }
         }
         return Promise.reject(error);
@@ -45,6 +49,7 @@ export const authApi = {
     register: (data: { email: string; password: string; firstName: string; lastName: string; phone: string }) =>
         api.post('/auth/register', data),
     logout: () => api.post('/auth/logout'),
+    me: () => api.get('/auth/me'),
 };
 
 // ========== Properties API ==========
