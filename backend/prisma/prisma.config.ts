@@ -13,5 +13,6 @@ export default defineConfig({
             });
             return new PrismaPg(pool);
         },
+        seed: 'npx ts-node -r dotenv/config prisma/seed.ts',
     },
 });

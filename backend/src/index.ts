@@ -17,6 +17,7 @@ import messageRoutes from './routes/message.routes';
 import paymentRoutes from './routes/payment.routes';
 import fileRoutes from './routes/file.routes';
 import notificationRoutes from './routes/notification.routes';
+import googleAuthRoutes from './routes/google-auth.routes';
 
 dotenv.config();
 
@@ -45,6 +46,7 @@ app.use('/api/messages', messageRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/auth/google', googleAuthRoutes);
 
 // API Documentation/Discovery route
 app.get('/api', (_req: Request, res: Response) => {

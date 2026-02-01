@@ -82,4 +82,61 @@ export class AuthService {
             },
         };
     }
+
+    static async googleAuth(googleData: {
+        email: string;
+        firstName: string;
+        lastName: string;
+        profileImage: string | null;
+        googleId: string;
+    }) {
+        const { email, firstName, lastName, profileImage } = googleData;
+        // Note: googleId is available in googleData if needed for linking accounts in the future
+
+        // Check if user exists
+        let user = await prisma.user.findUnique({ where: { email } });
+
+        if (!user) {
+            // Create new user from Google data
+            // Generate a random password hash (user won't use it, they'll always use Google)
+            const randomPassword = Math.random().toString(36).slice(-16);
+            const passwordHash = await hashPassword(randomPassword);
+
+            user = await prisma.user.create({
+                data: {
+                    email,
+                    passwordHash,
+                    firstName,
+                    lastName,
+                    profileImage,
+                    role: Role.TENANT,
+                    emailVerified: true, // Google emails are verified
+                    isActive: true,
+                },
+            });
+        }
+
+        if (!user.isActive) {
+            throw new Error('Account is deactivated');
+        }
+
+        // Generate tokens
+        const accessToken = generateAccessToken({ userId: user.id, role: user.role });
+        const refreshToken = generateRefreshToken({ userId: user.id, role: user.role });
+
+        return {
+            user: {
+                id: user.id,
+                email: user.email,
+                role: user.role,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                profileImage: user.profileImage,
+            },
+            tokens: {
+                accessToken,
+                refreshToken,
+            },
+        };
+    }
 }
