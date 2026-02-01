@@ -48,7 +48,6 @@ app.use('/api/files', fileRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/auth/google', googleAuthRoutes);
 
-// API Documentation/Discovery route
 app.get('/api', (_req: Request, res: Response) => {
     res.json({
         message: 'Rental & Apartment Management API',

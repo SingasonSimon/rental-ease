@@ -48,20 +48,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const login = async (email: string, password: string) => {
         const response = await authApi.login(email, password);
-        const { token, user: userData } = response.data;
+        const { tokens, user: userData } = response.data;
 
-        localStorage.setItem("accessToken", token);
+        localStorage.setItem("accessToken", tokens.accessToken);
+        localStorage.setItem("refreshToken", tokens.refreshToken);
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
+
+        // Redirect based on role
+        switch (userData.role) {
+            case "ADMIN":
+                router.push("/admin");
+                break;
+            case "LANDLORD":
+                router.push("/landlord");
+                break;
+            default:
+                router.push("/dashboard");
+        }
     };
 
     const register = async (data: { email: string; password: string; firstName: string; lastName: string; phone: string }) => {
         const response = await authApi.register(data);
-        const { token, user: userData } = response.data;
+        const { tokens, user: userData } = response.data;
 
-        localStorage.setItem("accessToken", token);
+        localStorage.setItem("accessToken", tokens.accessToken);
+        localStorage.setItem("refreshToken", tokens.refreshToken);
         localStorage.setItem("user", JSON.stringify(userData));
         setUser(userData);
+
+        // Redirect to dashboard
+        router.push("/dashboard");
     };
 
     const logout = () => {
