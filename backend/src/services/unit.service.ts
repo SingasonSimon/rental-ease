@@ -5,16 +5,21 @@ export class UnitService {
     static async getAllUnits(filters: any = {}) {
         const { propertyId, status, minRent, maxRent, bedrooms } = filters;
 
+        // Construct where clause carefully
+        const where: any = {};
+
+        if (propertyId) where.propertyId = propertyId;
+        if (status) where.status = status as UnitStatus;
+        if (bedrooms) where.bedrooms = parseInt(bedrooms);
+
+        if (minRent || maxRent) {
+            where.rentAmount = {};
+            if (minRent) where.rentAmount.gte = parseFloat(minRent);
+            if (maxRent) where.rentAmount.lte = parseFloat(maxRent);
+        }
+
         return await prisma.unit.findMany({
-            where: {
-                ...(propertyId && { propertyId }),
-                ...(status && { status: status as UnitStatus }),
-                ...(bedrooms && { bedrooms: parseInt(bedrooms) }),
-                rentAmount: {
-                    ...(minRent && { gte: parseFloat(minRent) }),
-                    ...(maxRent && { lte: parseFloat(maxRent) }),
-                }
-            },
+            where,
             include: {
                 property: {
                     select: {
