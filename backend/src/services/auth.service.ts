@@ -51,13 +51,13 @@ export class AuthService {
         // Find user
         const user = await prisma.user.findUnique({ where: { email } });
         if (!user) {
-            throw new Error('Invalid credentials');
+            throw new Error('User not found');
         }
 
         // Check password
         const isPasswordValid = await comparePassword(password, user.passwordHash);
         if (!isPasswordValid) {
-            throw new Error('Invalid credentials');
+            throw new Error('Invalid password');
         }
 
         if (!user.isActive) {

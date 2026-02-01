@@ -23,7 +23,7 @@ export default function LoginPage() {
             await login(email, password);
             // Redirect is handled by AuthContext based on role
         } catch (err: any) {
-            setError(err.message || "Invalid email or password");
+            setError(err.response?.data?.error || err.message || "Invalid email or password");
         } finally {
             setLoading(false);
         }
