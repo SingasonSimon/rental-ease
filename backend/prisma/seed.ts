@@ -26,10 +26,10 @@ async function hashPassword(password: string): Promise<string> {
 }
 
 async function main() {
-    console.log('🌱 Starting database seed...');
+    console.log('[SEED] Starting database seed...');
 
     // Clean up existing data
-    console.log('🧹 Cleaning up existing data...');
+    console.log('[SEED] Cleaning up existing data...');
     await prisma.maintenanceComment.deleteMany();
     await prisma.maintenanceRequest.deleteMany();
     await prisma.message.deleteMany();
@@ -44,7 +44,7 @@ async function main() {
     await prisma.user.deleteMany();
 
     // ==================== USERS ====================
-    console.log('👥 Creating users...');
+    console.log('[SEED] Creating users...');
 
     const adminPassword = await hashPassword('admin123');
     const landlordPassword = await hashPassword('landlord123');
@@ -141,10 +141,10 @@ async function main() {
         },
     });
 
-    console.log(`   ✓ Created ${7} users`);
+    console.log('   - Created 7 users');
 
     // ==================== PROPERTIES ====================
-    console.log('🏢 Creating properties...');
+    console.log('[SEED] Creating properties...');
 
     const property1 = await prisma.property.create({
         data: {
@@ -198,10 +198,10 @@ async function main() {
         },
     });
 
-    console.log(`   ✓ Created ${4} properties`);
+    console.log('   - Created 4 properties');
 
     // ==================== PROPERTY IMAGES ====================
-    console.log('🖼️ Creating property images...');
+    console.log('[SEED] Creating property images...');
 
     await prisma.propertyImage.createMany({
         data: [
@@ -214,10 +214,10 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 6 property images`);
+    console.log('   - Created 6 property images');
 
     // ==================== UNITS ====================
-    console.log('🚪 Creating units...');
+    console.log('[SEED] Creating units...');
 
     // Kileleshwa Heights Units
     const unit1 = await prisma.unit.create({
@@ -363,10 +363,10 @@ async function main() {
         },
     });
 
-    console.log(`   ✓ Created 10 units`);
+    console.log('   - Created 10 units');
 
     // ==================== UNIT IMAGES ====================
-    console.log('🖼️ Creating unit images...');
+    console.log('[SEED] Creating unit images...');
 
     await prisma.unitImage.createMany({
         data: [
@@ -383,10 +383,10 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 10 unit images`);
+    console.log('   - Created 10 unit images');
 
     // ==================== LEASES ====================
-    console.log('📄 Creating leases...');
+    console.log('[SEED] Creating leases...');
 
     const lease1 = await prisma.lease.create({
         data: {
@@ -448,10 +448,10 @@ async function main() {
         },
     });
 
-    console.log(`   ✓ Created 4 leases`);
+    console.log('   - Created 4 leases');
 
     // ==================== APPLICATIONS ====================
-    console.log('📝 Creating applications...');
+    console.log('[SEED] Creating applications...');
 
     await prisma.application.createMany({
         data: [
@@ -487,10 +487,10 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 4 applications`);
+    console.log('   - Created 4 applications');
 
     // ==================== PAYMENTS ====================
-    console.log('💰 Creating payments...');
+    console.log('[SEED] Creating payments...');
 
     await prisma.payment.createMany({
         data: [
@@ -509,10 +509,10 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 8 payments`);
+    console.log('   - Created 8 payments');
 
     // ==================== MAINTENANCE REQUESTS ====================
-    console.log('🔧 Creating maintenance requests...');
+    console.log('[SEED] Creating maintenance requests...');
 
     const maintenance1 = await prisma.maintenanceRequest.create({
         data: {
@@ -560,10 +560,10 @@ async function main() {
         },
     });
 
-    console.log(`   ✓ Created 4 maintenance requests`);
+    console.log('   - Created 4 maintenance requests');
 
     // ==================== MAINTENANCE COMMENTS ====================
-    console.log('💬 Creating maintenance comments...');
+    console.log('[SEED] Creating maintenance comments...');
 
     await prisma.maintenanceComment.createMany({
         data: [
@@ -573,10 +573,10 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 3 maintenance comments`);
+    console.log('   - Created 3 maintenance comments');
 
     // ==================== MESSAGES ====================
-    console.log('✉️ Creating messages...');
+    console.log('[SEED] Creating messages...');
 
     await prisma.message.createMany({
         data: [
@@ -588,10 +588,10 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 5 messages`);
+    console.log('   - Created 5 messages');
 
     // ==================== NOTIFICATIONS ====================
-    console.log('🔔 Creating notifications...');
+    console.log('[SEED] Creating notifications...');
 
     await prisma.notification.createMany({
         data: [
@@ -603,11 +603,11 @@ async function main() {
         ],
     });
 
-    console.log(`   ✓ Created 5 notifications`);
+    console.log('   - Created 5 notifications');
 
     // ==================== SUMMARY ====================
-    console.log('\n✅ Seed completed successfully!');
-    console.log('\n📊 Summary:');
+    console.log('\n[SEED] Completed successfully!');
+    console.log('\nSummary:');
     console.log('   - 7 Users (1 admin, 2 landlords, 4 tenants)');
     console.log('   - 4 Properties');
     console.log('   - 10 Units');
@@ -618,7 +618,7 @@ async function main() {
     console.log('   - 5 Messages');
     console.log('   - 5 Notifications');
 
-    console.log('\n🔑 Login Credentials:');
+    console.log('\nLogin Credentials:');
     console.log('   Admin:    admin@rental.com / admin123');
     console.log('   Landlord: john.kamau@rental.com / landlord123');
     console.log('   Landlord: grace.properties@rental.com / landlord123');
@@ -630,7 +630,7 @@ async function main() {
 
 main()
     .catch((e) => {
-        console.error('❌ Seed failed:', e);
+        console.error('[SEED] Failed:', e);
         process.exit(1);
     })
     .finally(async () => {

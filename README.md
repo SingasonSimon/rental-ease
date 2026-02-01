@@ -2,25 +2,23 @@
 
 A full-stack web application for managing rental properties, apartments, tenants, and payments with M-Pesa integration.
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 rental-management/
 ├── README.md                    # This file
-├── task.md                      # Project task checklist
-├── implementation_plan.md       # Detailed technical plan
 ├── backend/                     # Node.js + Express + PostgreSQL
 └── frontend/                    # Next.js + TypeScript + Tailwind
 ```
 
-## 🎯 Project Overview
+## Project Overview
 
 This system enables:
 - **Admins**: Full system control including M-Pesa payment processing
 - **Landlords**: Property and unit management (read-only payment access)
 - **Tenants**: Browse apartments, apply for rentals, track payments
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Backend
 - Node.js + Express
@@ -35,22 +33,33 @@ This system enables:
 - Tailwind CSS
 - React Hook Form + Zod
 
-## 📋 Next Steps
+## Getting Started
 
-1. Review [implementation_plan.md](./implementation_plan.md) for detailed architecture
-2. Review [task.md](./task.md) for project phases
-3. Answer the open questions in the implementation plan
-4. Begin with backend setup or frontend structure
+### Prerequisites
+- Node.js 18+
+- PostgreSQL database (or Neon)
 
-## 🚀 Getting Started
+### Backend Setup
+```bash
+cd backend
+npm install
+cp .env.example .env  # Configure your database URL
+npx prisma generate
+npx prisma db push
+npm run dev
+```
 
-Once you approve the plan, we'll:
-1. Set up the backend project structure
-2. Configure PostgreSQL database
-3. Implement authentication & RBAC
-4. Build the frontend with role-based dashboards
-5. Integrate M-Pesa payment processing
+### Frontend Setup
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
-## 📞 Contact
+## Test Credentials
 
-For questions or changes to the plan, let's discuss!
+| Role | Email | Password |
+|------|-------|----------|
+| Admin | admin@rental.com | admin123 |
+| Landlord | john.kamau@rental.com | landlord123 |
+| Tenant | jane.mwangi@example.com | tenant123 |
